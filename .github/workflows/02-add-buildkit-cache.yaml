@@ -1,5 +1,5 @@
 ---
-name: Build with BuildKit
+name: Build with BuildKit Cache
 # simplest workflow possible
 
 on:
@@ -30,7 +30,9 @@ jobs:
         uses: docker/build-push-action@v2
         with:
 #NEW: ############################################################
-          builder: ${{ steps.buildx.outputs.name }}
+          # builder: ${{ steps.buildx.outputs.name }}
 #NEW: ############################################################
           push: ${{ github.event_name != 'pull_request' }}
           tags: bretfisher/allhands22:02
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
