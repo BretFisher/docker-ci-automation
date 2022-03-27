@@ -1,5 +1,5 @@
 ---
-name: 04 Build with Metadata
+name: 05 Build with Unit Tests in Docker
 
 on:
   push:
@@ -26,8 +26,24 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+#NEW: ############################################################  
+      - name: Build and export to Docker
+        uses: docker/build-push-action@v2
+        with:
+          push: yes
+          tags: ${{ github.run_id }}
+          target: test
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+      - name: Unit Testing in Docker
+        run: |
+          docker run --rm ${{ github.run_id }} echo "run test commands here"
 #NEW: ############################################################
-      - name: Docker meta
+
+      - name: Docker Metadata for Final Image Build
         id: docker_meta
         uses: docker/metadata-action@v3
         with:
@@ -35,21 +51,18 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=raw,value=04
+            type=raw,value=05
             type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
             type=ref,event=pr
             type=ref,event=branch
             type=semver,pattern={{version}}
-#NEW: ############################################################
       
-      - name: Docker build
+      - name: Docker Build and Push to Docker Hub
         uses: docker/build-push-action@v2
         with:
-#NEW: ############################################################
           push: yes
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
-#NEW: ############################################################
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64,linux/arm/v7
