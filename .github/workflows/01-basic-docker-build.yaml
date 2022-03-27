@@ -27,4 +27,4 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ github.repository }}
+          tags: bretfisher/allhands22
