@@ -1,0 +1,32 @@
+---
+name: Lint Code Base
+
+on:
+  
+  push:
+    branches: [main]
+  
+  pull_request:
+
+jobs:
+  call-super-linter:
+
+    name: Call Super-Linter
+
+    # use Reusable Workflows to call my linter config remotely
+    # https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
+    
+    permissions:
+      contents: read # clone the repo to lint
+      statuses: write #read/write to repo custom statuses
+
+    #FIXME: customize uri to point to your forked linter repository
+    uses: bretfisher/super-linter-workflow/.github/workflows/super-linter.yaml@main
+    
+    # Optional settings examples
+    
+    # with:
+    
+      # devops-only: false
+      
+      # filter-regex-exclude: html/.*
