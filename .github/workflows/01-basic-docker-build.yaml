@@ -1,5 +1,5 @@
 ---
-name: Basic Docker Build
+name: 01 Basic Docker Build
 # simplest workflow possible
 
 on:
