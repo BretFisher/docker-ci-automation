@@ -30,10 +30,10 @@ jobs:
       - name: Build and export to Docker
         uses: docker/build-push-action@v2
         with:
-          push: true
+          push: false
+          load: true
           tags: ${{ github.run_id }}
           target: test
-          load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
@@ -52,7 +52,7 @@ jobs:
             latest=false
           tags: |
             type=raw,value=05
-          # comment these out on all by 04-add-metadata.yaml
+          # comment these out on all but 04-add-metadata.yaml to avoid overwriting image tags
           # type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
           # type=ref,event=pr
           # type=ref,event=branch
@@ -61,7 +61,7 @@ jobs:
       - name: Docker Build and Push to Docker Hub
         uses: docker/build-push-action@v2
         with:
-          push: yes
+          push: true
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
           cache-from: type=gha
