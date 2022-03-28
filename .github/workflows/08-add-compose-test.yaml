@@ -50,11 +50,11 @@ jobs:
         run: |
           docker run --rm ${{ github.run_id }} echo "run test commands here"
 
-#NEW: ############################################################  
+#NEW: (START) ############################################################  
       - name: Test healthcheck in Docker Compose
         run: |
           IMAGE_NAME=${{ github.run_id }} docker compose -f docker-compose.test.yml up --abort-on-container-exit
-#NEW: ############################################################
+#NEW: (END) ############################################################  
 
       - name: Run Trivy for all CVEs (non-blocking)
         uses: aquasecurity/trivy-action@master
