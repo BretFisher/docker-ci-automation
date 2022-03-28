@@ -1,5 +1,5 @@
 ---
-name: 08 Build, Scan, and Compose Test
+name: 08 Build and Compose Test
 
 on:
   push:

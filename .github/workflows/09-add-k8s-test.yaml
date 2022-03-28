@@ -1,5 +1,5 @@
 ---
-name: 08 Build, Scan, and Compose Test
+name: 09 Build and Smoke Test
 
 on:
   push:
@@ -42,12 +42,16 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set testing image name:tag
+        id: testing-image
+        run: echo "::set-output name=tag::ghcr.io/bretfisher/allhands22:${{ github.run_id }}"
 
       - name: Build and Push to GHCR
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ghcr.io/bretfisher/allhands22:${{ github.run_id }}
+          tags: ${{ steps.testing-image.outputs.tag}}
           target: test
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -56,16 +60,16 @@ jobs:
 
       - name: Unit Testing in Docker
         run: |
-          docker run --rm ghcr.io/bretfisher/allhands22:${{ github.run_id }} echo "run test commands here"
+          docker run --rm ${{ steps.testing-image.outputs.tag}} echo "run test commands here"
 
       - name: Test healthcheck in Docker Compose
         run: |
-          IMAGE_NAME=ghcr.io/bretfisher/allhands22:${{ github.run_id }}
+          IMAGE_NAME=${{ steps.testing-image.outputs.tag}}
           docker compose -f docker-compose.test.yml up --exit-code-from sut
 
 #NEW: ############################################################
-      - uses: engineerd/setup-kind@v0
-      - name: Testing K8s
+      - uses: engineerd/setup-kind@master
+      - name: Testing Healthcheck in kind K8s
         run: |
           kubectl cluster-info
           kubectl get pods -n kube-system
@@ -74,7 +78,26 @@ jobs:
           kubectl apply -f manifests
           kubectl rollout status deployment myapp
           kubectl exec deploy/myapp -- curl --fail myapp
-          kubectl patch deploy myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"myapp","image":"ghcr.io/bretfisher/allhands22:${{ github.run_id }}"}]}}}}'
+          kubectl patch deploy myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"myapp","image":"${{ steps.testing-image.outputs.tag}}"}]}}}}'
+
+      - uses: AbsaOSS/k3d-action@v2
+        name: Start k3d K8s cluster
+        with:
+          cluster-name: "test-cluster-1"
+          args: >-
+            --agents 1
+            --no-lb
+            --k3s-arg "--no-deploy=traefik,servicelb,metrics-server@server:*"
+      - name: Testing Healthcheck in k3d K8s
+        run: |
+          kubectl cluster-info
+          kubectl get pods -n kube-system
+          echo "current-context:" $(kubectl config current-context)
+          echo "environment-kubeconfig:" ${KUBECONFIG}
+          kubectl apply -f manifests
+          kubectl rollout status deployment myapp
+          kubectl exec deploy/myapp -- curl --fail myapp
+          kubectl patch deploy myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"myapp","image":"${{ steps.testing-image.outputs.tag}}"}]}}}}'
 
 #NEW: ############################################################  
 
