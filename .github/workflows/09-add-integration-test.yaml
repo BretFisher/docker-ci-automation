@@ -1,5 +1,5 @@
 ---
-name: 05 Build with Unit Tests in Docker
+name: 09 Build and Integration Test
 
 on:
   push:
@@ -11,8 +11,8 @@ jobs:
   build-image:
     name: Build Images
     runs-on: ubuntu-latest
-    steps:
 
+    steps:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -26,22 +26,26 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-#NEW: ############################################################  
       - name: Build and export to Docker
         uses: docker/build-push-action@v2
         with:
           push: false
-          load: true
+          load: true # Export to Docker Engine rather than pushing to a registry
           tags: ${{ github.run_id }}
           target: test
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
 
-      - name: Unit Testing in Docker
+#NEW: (START) ############################################################  
+        # for more advanced tests, use docker compose with `depends_on`
+          # NOTE: GHA and other CIs can also run dependency containers on their own
+          # GHA `services:` can do this if you're trying to avoid docker compose
+      - name: Test healthcheck in Docker Compose
         run: |
-          docker run --rm ${{ github.run_id }} echo "run test commands here"
-#NEW: ############################################################
+          IMAGE_NAME=${{ github.run_id }} docker compose -f docker-compose.test.yml up --abort-on-container-exit
+#NEW: (END) ############################################################  
+
 
       - name: Docker Metadata for Final Image Build
         id: docker_meta
@@ -51,7 +55,7 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=raw,value=05
+            type=raw,value=09
           # comment these out on all but 04-add-metadata.yaml to avoid overwriting image tags
           # type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
           # type=ref,event=pr

@@ -1,5 +1,5 @@
 ---
-name: 08 Build and Compose Test
+name: 08 Build and Unit Test
 
 on:
   push:
@@ -11,17 +11,8 @@ jobs:
   build-image:
     name: Build Images
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read # for actions/checkout to fetch code
-      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
-
     steps:
 
-      - name: Checkout git repo
-        uses: actions/checkout@v3
-        with:
-          lfs: true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -35,51 +26,23 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+#NEW: (START) ##########################################################
       - name: Build and export to Docker
         uses: docker/build-push-action@v2
         with:
           push: false
-          load: true
+          load: true # Export to Docker Engine rather than pushing to a registry
           tags: ${{ github.run_id }}
           target: test
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
 
+        # for simple tests (npm test, etc.) just run a local image in docker
       - name: Unit Testing in Docker
         run: |
           docker run --rm ${{ github.run_id }} echo "run test commands here"
-
-#NEW: (START) ############################################################  
-      - name: Test healthcheck in Docker Compose
-        run: |
-          IMAGE_NAME=${{ github.run_id }} docker compose -f docker-compose.test.yml up --abort-on-container-exit
-#NEW: (END) ############################################################  
-
-      - name: Run Trivy for all CVEs (non-blocking)
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ github.run_id }}
-          format: table 
-          exit-code: 0
-
-# NOTE: disabled to avoid running twice and overwriting 07-add-cve-scanning-adv.yaml
-      # - name: Run Trivy for HIGH,CRITICAL CVEs and report (blocking)
-      #   uses: aquasecurity/trivy-action@master
-      #   with:
-      #     image-ref: ${{ github.run_id }}
-      #     exit-code: 1
-      #     ignore-unfixed: true
-      #     vuln-type: 'os,library'
-      #     severity: 'HIGH,CRITICAL'
-      #     format: 'sarif'
-      #     output: 'trivy-results.sarif'
-      
-      # - name: Upload Trivy scan results to GitHub Security tab
-      #   uses: github/codeql-action/upload-sarif@v1
-      #   if: always()
-      #   with:
-      #     sarif_file: 'trivy-results.sarif'
+#NEW: (END) ############################################################
 
       - name: Docker Metadata for Final Image Build
         id: docker_meta

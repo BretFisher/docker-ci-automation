@@ -13,16 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read # for actions/checkout to fetch code
       packages: write # needed to push docker image to ghcr.io
-      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
 
     steps:
-
-      - name: Checkout git repo
-        uses: actions/checkout@v3
-        with:
-          lfs: true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -59,15 +52,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
-#NEW: (END) ############################################################  
 
-      - name: Unit Testing in Docker
-        run: docker run --rm "${TESTING_IMAGE}" echo "run test commands here"
-
-      - name: Test healthcheck in Docker Compose
-        run: docker compose -f docker-compose.test.yml up --exit-code-from sut
-
-#NEW: (START) ############################################################
       - uses: AbsaOSS/k3d-action@v2
         with:
           cluster-name: "test-cluster-1"
@@ -88,31 +73,6 @@ jobs:
       
 #NEW: (END) ############################################################  
 
-      - name: Run Trivy for all CVEs (non-blocking)
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ghcr.io/bretfisher/allhands22:${{ github.run_id }}
-          format: table
-          exit-code: 0
-
-# NOTE: disabled to avoid running twice and overwriting 07-add-cve-scanning-adv.yaml
-      # - name: Run Trivy for HIGH,CRITICAL CVEs and report (blocking)
-      #   uses: aquasecurity/trivy-action@master
-      #   with:
-      #     image-ref: ghcr.io/bretfisher/allhands22:${{ github.run_id }}
-      #     exit-code: 1
-      #     ignore-unfixed: true
-      #     vuln-type: 'os,library'
-      #     severity: 'HIGH,CRITICAL'
-      #     format: 'sarif'
-      #     output: 'trivy-results.sarif'
-      
-      # - name: Upload Trivy scan results to GitHub Security tab
-      #   uses: github/codeql-action/upload-sarif@v1
-      #   if: always()
-      #   with:
-      #     sarif_file: 'trivy-results.sarif'
-
       - name: Docker Metadata for Final Image Build
         id: docker_meta
         uses: docker/metadata-action@v3
@@ -121,7 +81,7 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=raw,value=09
+            type=raw,value=10
           # comment these out on all but 04-add-metadata.yaml to avoid overwriting image tags
           # type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
           # type=ref,event=pr
