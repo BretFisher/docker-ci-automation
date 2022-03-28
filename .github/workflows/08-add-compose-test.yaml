@@ -1,5 +1,5 @@
 ---
-name: 07 Build and Scan CVEs + Report
+name: 08 Build, Scan, and Compose Test
 
 on:
   push:
@@ -63,22 +63,23 @@ jobs:
           format: table 
           exit-code: 0
 
-      - name: Run Trivy for HIGH,CRITICAL CVEs and report (blocking)
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ github.run_id }}
-          exit-code: 1
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'HIGH,CRITICAL'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+# NOTE: disabled to avoid running twice and overwriting 07-add-cve-scanning-adv.yaml
+      # - name: Run Trivy for HIGH,CRITICAL CVEs and report (blocking)
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     image-ref: ${{ github.run_id }}
+      #     exit-code: 1
+      #     ignore-unfixed: true
+      #     vuln-type: 'os,library'
+      #     severity: 'HIGH,CRITICAL'
+      #     format: 'sarif'
+      #     output: 'trivy-results.sarif'
       
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v1
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
+      # - name: Upload Trivy scan results to GitHub Security tab
+      #   uses: github/codeql-action/upload-sarif@v1
+      #   if: always()
+      #   with:
+      #     sarif_file: 'trivy-results.sarif'
 
       - name: Docker Metadata for Final Image Build
         id: docker_meta
@@ -88,7 +89,7 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=raw,value=07
+            type=raw,value=08
           # comment these out on all but 04-add-metadata.yaml to avoid overwriting image tags
           # type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
           # type=ref,event=pr
