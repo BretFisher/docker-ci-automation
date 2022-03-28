@@ -82,9 +82,10 @@ jobs:
           kubectl get pods -n kube-system
           echo "current-context:" $(kubectl config current-context)
           echo "environment-kubeconfig:" "${KUBECONFIG}"
-          kubectl create secret generic regcred \
-            --from-file=.dockerconfigjson=~/.docker/config.json \
-            --type=kubernetes.io/dockerconfigjson
+          kubectl create secret docker-registry regcred \
+            --docker-server=https://ghcr.io \
+            --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.GITHUB_TOKEN }}
           envsubst < manifests/deployment.yaml  | kubectl apply -f -
           sleep 10
           kubectl get pods
