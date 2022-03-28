@@ -5,4 +5,4 @@ services:
     image: $IMAGE_NAME
     depends_on:
       - allhands22
-    command: curl --fail http://allhands22:80 || exit 1
+    command: curl --fail http://allhands22:80/test || exit 1
