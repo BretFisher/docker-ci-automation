@@ -65,11 +65,11 @@ jobs:
 
       - name: Test healthcheck in Docker Compose
         run: |
-          IMAGE_NAME=${{ steps.testing-image.outputs.tag }}
+          export IMAGE_NAME=${{ steps.testing-image.outputs.tag }}
           echo $IMAGE_NAME
           docker compose -f docker-compose.test.yml up --exit-code-from sut
 
-#NEW: ############################################################
+#NEW: (START) ############################################################
       - uses: engineerd/setup-kind@master
       - name: Testing Healthcheck in kind K8s
         run: |
@@ -77,6 +77,8 @@ jobs:
           kubectl get pods -n kube-system
           echo "current-context:" $(kubectl config current-context)
           echo "environment-kubeconfig:" ${KUBECONFIG}
+          kubectl get secret --all-namespaces
+          kubectl get secret docker-registry --all-namespaces
           kubectl apply -f manifests
           kubectl rollout status deployment myapp
           kubectl exec deploy/myapp -- curl --fail myapp
@@ -96,12 +98,14 @@ jobs:
           kubectl get pods -n kube-system
           echo "current-context:" $(kubectl config current-context)
           echo "environment-kubeconfig:" ${KUBECONFIG}
+          kubectl get secret --all-namespaces
+          kubectl get secret docker-registry --all-namespaces
           kubectl apply -f manifests
           kubectl rollout status deployment myapp
           kubectl exec deploy/myapp -- curl --fail myapp
           kubectl patch deploy myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"myapp","image":"${{ steps.testing-image.outputs.tag}}"}]}}}}'
 
-#NEW: ############################################################  
+#NEW: (END) ############################################################  
 
       - name: Run Trivy for all CVEs (non-blocking)
         uses: aquasecurity/trivy-action@master

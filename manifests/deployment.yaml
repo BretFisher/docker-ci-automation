@@ -17,7 +17,6 @@ spec:
         app: myapp
     spec:
       containers:
-      - name: myapp
-        image: bretfisher/allhands22
-        imagePullPolicy: Always
-
+        - name: myapp
+          image: bretfisher/allhands22
+          imagePullPolicy: IfNotPresent

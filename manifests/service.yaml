@@ -7,8 +7,8 @@ metadata:
   labels:
     app: myapp
 spec:
-  ports:
-  - port: 80
-    targetPort: 80
   selector:
     app: myapp
+  ports:
+    - port: 80
+      targetPort: 80
