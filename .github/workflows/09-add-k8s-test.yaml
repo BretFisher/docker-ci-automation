@@ -44,7 +44,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Save testing image name:tag to output and env
+      - name: Save testing image name:tag to output and TESTING_IMAGE env
         id: testing-image
         run: |
           echo "::set-output name=tag::ghcr.io/bretfisher/allhands22:${{ github.run_id }}"
@@ -82,21 +82,26 @@ jobs:
           kubectl get pods -n kube-system
           echo "current-context:" $(kubectl config current-context)
           echo "environment-kubeconfig:" "${KUBECONFIG}"
+          kubectl create secret generic regcred \
+            --from-file=.dockerconfigjson=~/.docker/config.json \
+            --type=kubernetes.io/dockerconfigjson
           envsubst < manifests/deployment.yaml  | kubectl apply -f -
+          sleep 10
+          kubectl get pods
           kubectl rollout status deployment myapp
           kubectl exec deploy/myapp -- curl --fail localhost
       
-      - uses: engineerd/setup-kind@v0.5.0
+      # - uses: engineerd/setup-kind@v0.5.0
 
-      - name: Testing Healthcheck in kind K8s
-        run: |
-          kubectl cluster-info
-          kubectl get pods -n kube-system
-          echo "current-context:" $(kubectl config current-context)
-          echo "environment-kubeconfig:" "${KUBECONFIG}"
-          envsubst < manifests/deployment.yaml  | kubectl apply -f -
-          kubectl rollout status deployment myapp
-          kubectl exec deploy/myapp -- curl --fail localhost
+      # - name: Testing Healthcheck in kind K8s
+      #   run: |
+      #     kubectl cluster-info
+      #     kubectl get pods -n kube-system
+      #     echo "current-context:" $(kubectl config current-context)
+      #     echo "environment-kubeconfig:" "${KUBECONFIG}"
+      #     envsubst < manifests/deployment.yaml  | kubectl apply -f -
+      #     kubectl rollout status deployment myapp
+      #     kubectl exec deploy/myapp -- curl --fail localhost
 #NEW: (END) ############################################################  
 
       - name: Run Trivy for all CVEs (non-blocking)

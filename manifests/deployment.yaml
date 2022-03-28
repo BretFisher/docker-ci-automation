@@ -16,6 +16,8 @@ spec:
       labels:
         app: myapp
     spec:
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: myapp
           image: "${TESTING_IMAGE}"
