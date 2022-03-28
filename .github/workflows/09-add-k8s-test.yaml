@@ -78,7 +78,7 @@ jobs:
           echo "current-context:" $(kubectl config current-context)
           echo "environment-kubeconfig:" "${KUBECONFIG}"
           kubectl get secret --all-namespaces
-          kubectl get secret docker-registry --all-namespaces
+          kubectl get secret docker-registry
           kubectl apply -f manifests
           kubectl rollout status deployment myapp
           kubectl exec deploy/myapp -- curl --fail myapp
@@ -99,7 +99,7 @@ jobs:
           echo "current-context:" $(kubectl config current-context)
           echo "environment-kubeconfig:" "${KUBECONFIG}"
           kubectl get secret --all-namespaces
-          kubectl get secret docker-registry --all-namespaces
+          kubectl get secret docker-registry
           kubectl apply -f manifests
           kubectl rollout status deployment myapp
           kubectl exec deploy/myapp -- curl --fail myapp
