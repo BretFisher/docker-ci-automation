@@ -61,11 +61,12 @@ jobs:
 
       - name: Unit Testing in Docker
         run: |
-          docker run --rm ${{ steps.testing-image.outputs.tag}} echo "run test commands here"
+          docker run --rm ${{ steps.testing-image.outputs.tag }} echo "run test commands here"
 
       - name: Test healthcheck in Docker Compose
         run: |
-          IMAGE_NAME=${{ steps.testing-image.outputs.tag}}
+          IMAGE_NAME=${{ steps.testing-image.outputs.tag }}
+          echo $IMAGE_NAME
           docker compose -f docker-compose.test.yml up --exit-code-from sut
 
 #NEW: ############################################################

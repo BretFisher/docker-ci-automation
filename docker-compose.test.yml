@@ -1,8 +1,8 @@
 services:
   allhands22:
-    image: $IMAGE_NAME
+    image: "${IMAGE_NAME}"
   sut:
-    image: $IMAGE_NAME
+    image: "${IMAGE_NAME}"
     depends_on:
       - allhands22
     command: curl --fail http://allhands22:80 || exit 1
