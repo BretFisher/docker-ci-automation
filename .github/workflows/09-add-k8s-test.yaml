@@ -44,9 +44,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Set testing image name:tag
+      - name: Save testing image name:tag to output and env
         id: testing-image
-        run: echo "::set-output name=tag::ghcr.io/bretfisher/allhands22:${{ github.run_id }}"
+        run: |
+          echo "::set-output name=tag::ghcr.io/bretfisher/allhands22:${{ github.run_id }}"
+          echo "TESTING_IMAGE=ghcr.io/bretfisher/allhands22:${{ github.run_id }}" >> $GITHUB_ENV
 
       - name: Build and Push to GHCR
         uses: docker/build-push-action@v2
@@ -60,36 +62,20 @@ jobs:
 #NEW: ############################################################
 
       - name: Unit Testing in Docker
-        run: |
-          docker run --rm ${{ steps.testing-image.outputs.tag }} echo "run test commands here"
+        run: docker run --rm "${TESTING_IMAGE}" echo "run test commands here"
 
       - name: Test healthcheck in Docker Compose
-        run: |
-          export IMAGE_NAME=${{ steps.testing-image.outputs.tag }}
-          echo $IMAGE_NAME
-          docker compose -f docker-compose.test.yml up --exit-code-from sut
+        run: docker compose -f docker-compose.test.yml up --exit-code-from sut
 
 #NEW: (START) ############################################################
-      - uses: engineerd/setup-kind@v0.5.0
-      - name: Testing Healthcheck in kind K8s
-        run: |
-          kubectl cluster-info
-          kubectl get pods -n kube-system
-          echo "current-context:" $(kubectl config current-context)
-          echo "environment-kubeconfig:" "${KUBECONFIG}"
-          kubectl apply -f manifests
-          kubectl rollout status deployment myapp
-          kubectl exec deploy/myapp -- curl --fail myapp
-          kubectl patch deploy myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"myapp","image":"${{ steps.testing-image.outputs.tag}}"}]}}}}'
-
       - uses: AbsaOSS/k3d-action@v2
-        name: Start k3d K8s cluster
         with:
           cluster-name: "test-cluster-1"
           args: >-
             --agents 1
             --no-lb
             --k3s-arg "--no-deploy=traefik,servicelb,metrics-server@server:*"
+      
       - name: Testing Healthcheck in k3d K8s
         run: |
           kubectl cluster-info
@@ -97,11 +83,21 @@ jobs:
           echo "current-context:" $(kubectl config current-context)
           echo "environment-kubeconfig:" "${KUBECONFIG}"
           kubectl get secret --all-namespaces
-          kubectl apply -f manifests
+          envsubset < manifests/deployment.yaml  | kubectl apply -f -
           kubectl rollout status deployment myapp
-          kubectl exec deploy/myapp -- curl --fail myapp
-          kubectl patch deploy myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"myapp","image":"${{ steps.testing-image.outputs.tag}}"}]}}}}'
+          kubectl exec deploy/myapp -- curl --fail localhost
+      
+      - uses: engineerd/setup-kind@v0.5.0
 
+      - name: Testing Healthcheck in kind K8s
+        run: |
+          kubectl cluster-info
+          kubectl get pods -n kube-system
+          echo "current-context:" $(kubectl config current-context)
+          echo "environment-kubeconfig:" "${KUBECONFIG}"
+          envsubset < manifests/deployment.yaml  | kubectl apply -f -
+          kubectl rollout status deployment myapp
+          kubectl exec deploy/myapp -- curl --fail localhost
 #NEW: (END) ############################################################  
 
       - name: Run Trivy for all CVEs (non-blocking)

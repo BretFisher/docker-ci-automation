@@ -18,5 +18,5 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: bretfisher/allhands22
+          image: "${TESTING_IMAGE}"
           imagePullPolicy: IfNotPresent
