@@ -40,7 +40,7 @@ This repository is part of a group of my sample repos on GitHub Actions:
 [Docker Build/Push Action advanced examples](https://github.com/docker/build-push-action/tree/master/docs/advanced)
 [My full list of container examples and tools](https://github.com/bretfisher)
 
-## Join my container DevOps community!
+## Join my container DevOps community
 
 * [My "Vital DevOps" Discord server](https://devops.fan)
 * [My weekly YouTube Live show](https://bret.live)
