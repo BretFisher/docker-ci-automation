@@ -45,9 +45,8 @@ jobs:
       - name: Save testing image name:tag to output and TESTING_IMAGE env
         id: testing-image
         run: |
-          # shellcheck disable=2086
-          echo "::set-output name=tag::ghcr.io/bretfisher/allhands22:${{ github.run_id }}"
-          echo "TESTING_IMAGE=ghcr.io/bretfisher/allhands22:${{ github.run_id }}" >> $GITHUB_ENV
+          echo '::set-output name=tag::ghcr.io/bretfisher/allhands22:"${{ github.run_id }}"'
+          echo 'TESTING_IMAGE=ghcr.io/bretfisher/allhands22:"${{ github.run_id }}"' >> $GITHUB_ENV
 
       - name: Build and Push to GHCR
         uses: docker/build-push-action@v2

@@ -48,7 +48,8 @@ jobs:
           # GHA `services:` can do this if you're trying to avoid docker compose
       - name: Test healthcheck in Docker Compose
         run: |
-          IMAGE_NAME=${{ github.run_id }} docker compose -f docker-compose.test.yml up --abort-on-container-exit
+          export TESTING_IMAGE="${{ github.run_id }}"
+          docker compose -f docker-compose.test.yml up --exit-code-from sut
 #NEW: (END) ############################################################  
 
 

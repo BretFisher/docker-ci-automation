@@ -16,19 +16,10 @@ jobs:
     permissions:
       packages: write # needed to push docker image to ghcr.io
 
-    outputs:
-      tag: ${{ steps.testing-image.outputs.tag }}
-
     steps:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to ghcr.io registry
         uses: docker/login-action@v1
@@ -46,12 +37,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
-
-      - name: Save testing image name:tag to output and TESTING_IMAGE env
-        id: testing-image
-        run: |
-          # shellcheck disable=2086
-          echo "::set-output name=tag::ghcr.io/bretfisher/allhands22:${{ github.run_id }}"
     
  # NEXT JOB #######################################################################   
   test-unit:
@@ -72,7 +57,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Unit Testing in Docker
-        run: docker run --rm "${{ needs.build-test-image.outputs.tag }}" echo "run test commands here"
+        run: docker run --rm ghcr.io/bretfisher/allhands22:"$GITHUB_RUN_ID" echo "run test commands here"
 
 # NEXT JOB #######################################################################   
   test-integration:
@@ -94,7 +79,7 @@ jobs:
 
       - name: Test healthcheck in Docker Compose
         run: |
-          export TESTING_IMAGE="${{ needs.build-test-image.outputs.tag }}"
+          export TESTING_IMAGE=ghcr.io/bretfisher/allhands22:"$GITHUB_RUN_ID"
           docker compose -f docker-compose.test.yml up --exit-code-from sut
 
 # NEXT JOB #######################################################################   
@@ -122,7 +107,7 @@ jobs:
             --docker-server=https://ghcr.io \
             --docker-username=${{ github.actor }} \
             --docker-password=${{ secrets.GITHUB_TOKEN }}
-          export TESTING_IMAGE="${{ needs.build-test-image.outputs.tag }}"
+          export TESTING_IMAGE=ghcr.io/bretfisher/allhands22:"$GITHUB_RUN_ID"
           envsubst < manifests/deployment.yaml  | kubectl apply -f -
           kubectl rollout status deployment myapp
           kubectl exec deploy/myapp -- curl --fail localhost
@@ -153,7 +138,7 @@ jobs:
       - name: Run Trivy for all CVEs (non-blocking)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "${{ needs.build-test-image.outputs.tag }}"
+          image-ref: ghcr.io/bretfisher/allhands22:${{ github.run_id }}
           format: table
           exit-code: 0
 
@@ -161,7 +146,7 @@ jobs:
       # - name: Run Trivy for HIGH,CRITICAL CVEs and report (blocking)
       #   uses: aquasecurity/trivy-action@master
       #   with:
-      #     image-ref: "${{ needs.build-test-image.outputs.tag }}"
+      #     image-ref: ghcr.io/bretfisher/allhands22:${{ github.run_id }}
       #     exit-code: 1
       #     ignore-unfixed: true
       #     vuln-type: 'os,library'
