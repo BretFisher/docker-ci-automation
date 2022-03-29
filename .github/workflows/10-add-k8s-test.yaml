@@ -1,5 +1,5 @@
 ---
-name: 09 Build and Smoke Test
+name: 10 Build and Smoke Test
 
 on:
   push:
@@ -40,6 +40,7 @@ jobs:
       - name: Save testing image name:tag to output and TESTING_IMAGE env
         id: testing-image
         run: |
+          # shellcheck disable=2086
           echo "::set-output name=tag::ghcr.io/bretfisher/allhands22:${{ github.run_id }}"
           echo "TESTING_IMAGE=ghcr.io/bretfisher/allhands22:${{ github.run_id }}" >> $GITHUB_ENV
 
@@ -70,7 +71,6 @@ jobs:
           envsubst < manifests/deployment.yaml  | kubectl apply -f -
           kubectl rollout status deployment myapp
           kubectl exec deploy/myapp -- curl --fail localhost
-      
 #NEW: (END) ############################################################  
 
       - name: Docker Metadata for Final Image Build
