@@ -1,0 +1,289 @@
+---
+name: 99 Parallelize Jobs
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+# FIRST JOB #######################################################################   
+  build-test-image:
+    name: Build Image for Testing
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write # needed to push docker image to ghcr.io
+
+    steps:
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to ghcr.io registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build and Push to GHCR
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: ghcr.io/bretfisher/allhands22:${{ github.run_id }}
+          target: test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+    
+ # NEXT JOB #######################################################################   
+  test-unit:
+    name: Unit tests in Docker
+    needs: [build-test-image]
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: read
+      
+    steps:
+      
+      - name: Login to ghcr.io registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Unit Testing in Docker
+        run: docker run --rm ghcr.io/bretfisher/allhands22:"$GITHUB_RUN_ID" echo "run test commands here"
+
+# NEXT JOB #######################################################################   
+  test-integration:
+    name: Integration tests in Compose
+    needs: [build-test-image]
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: read
+
+    steps:
+
+      - name: Checkout git repo
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Login to ghcr.io registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Test healthcheck in Docker Compose
+        run: |
+          export TESTING_IMAGE=ghcr.io/bretfisher/allhands22:"$GITHUB_RUN_ID"
+          echo Testing image: "$TESTING_IMAGE"
+          docker compose -f docker-compose.test.yml up --exit-code-from sut
+
+# NEXT JOB #######################################################################   
+  test-k3d:
+    name: Test Deployment in Kubernetes
+    needs: [build-test-image]
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: read
+
+    steps:
+
+      - name: Checkout git repo
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Login to ghcr.io registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: AbsaOSS/k3d-action@v2
+        with:
+          cluster-name: "test-cluster-1"
+          args: >-
+            --agents 1
+            --no-lb
+            --k3s-arg "--no-deploy=traefik,servicelb,metrics-server@server:*"
+      
+      - name: Smoke test deployment in k3d Kubernetes
+        run: |
+          kubectl create secret docker-registry regcred \
+            --docker-server=https://ghcr.io \
+            --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.GITHUB_TOKEN }}
+          export TESTING_IMAGE=ghcr.io/bretfisher/allhands22:"$GITHUB_RUN_ID"
+          envsubst < manifests/deployment.yaml  | kubectl apply -f -
+          kubectl rollout status deployment myapp
+          kubectl exec deploy/myapp -- curl --fail localhost
+
+# NEXT JOB #######################################################################   
+  scan-image:
+    name: Scan Image with Trivy
+    needs: [build-test-image]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read # for actions/checkout to fetch code
+      packages: read # needed to pull docker image to ghcr.io
+      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+
+    steps:
+
+      - name: Checkout git repo
+        uses: actions/checkout@v3
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          
+      - name: Login to ghcr.io registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull image to scan
+        run: docker pull ghcr.io/bretfisher/allhands22:"$GITHUB_RUN_ID"
+        
+      - name: Run Trivy for all CVEs (non-blocking)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/bretfisher/allhands22:${{ github.run_id }}
+          format: table
+          exit-code: 0
+
+      # NOTE: disabled to avoid running twice and overwriting 07-add-cve-scanning-adv.yaml
+      # - name: Run Trivy for HIGH,CRITICAL CVEs and report (blocking)
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     image-ref: ghcr.io/bretfisher/allhands22:${{ github.run_id }}
+      #     exit-code: 1
+      #     ignore-unfixed: true
+      #     vuln-type: 'os,library'
+      #     severity: 'HIGH,CRITICAL'
+      #     format: 'sarif'
+      #     output: 'trivy-results.sarif'
+      
+      # - name: Upload Trivy scan results to GitHub Security tab
+      #   uses: github/codeql-action/upload-sarif@v1
+      #   if: always()
+      #   with:
+      #     sarif_file: 'trivy-results.sarif'
+
+# NEXT JOB #######################################################################   
+  build-final-image:
+    name: Build Final Image
+    needs: [test-unit, test-integration, test-k3d, scan-image]
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write # needed to push docker image to ghcr.io
+      pull-requests: write # needed to create and update comments in PRs
+
+    steps:
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to ghcr.io registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker Metadata for Final Image Build
+        id: docker_meta
+        uses: docker/metadata-action@v3
+        with:
+          images: bretfisher/allhands22,ghcr.io/bretfisher/allhands22
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=99
+          # comment these out on all but 04-add-metadata.yaml to avoid overwriting image tags
+          # type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
+          # type=ref,event=pr
+          # type=ref,event=branch
+          # type=semver,pattern={{version}}
+      
+      - name: Docker Build and Push to GHCR and Docker Hub
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+
+        # If PR, put image tags in the PR comments
+        # from https://github.com/marketplace/actions/create-or-update-comment
+        # These are commented out to avoid conflicting with 05-add-comments.yaml example
+      # - name: Find comment for image tags
+      #   uses: peter-evans/find-comment@v1
+      #   if: github.event_name == 'pull_request'
+      #   id: fc
+      #   with:
+      #     issue-number: ${{ github.event.pull_request.number }}
+      #     comment-author: 'github-actions[bot]'
+      #     body-includes: Docker image tag(s) pushed
+      
+      #   # If PR, put image tags in the PR comments
+      # - name: Create or update comment for image tags
+      #   uses: peter-evans/create-or-update-comment@v1
+      #   if: github.event_name == 'pull_request'
+      #   with:
+      #     comment-id: ${{ steps.fc.outputs.comment-id }}
+      #     issue-number: ${{ github.event.pull_request.number }}
+      #     body: |
+      #       Docker image tag(s) pushed:
+      #       ```text
+      #       ${{ steps.docker_meta.outputs.tags }}
+      #       ```
+
+      #       Labels added to images:
+      #       ```text
+      #       ${{ steps.docker_meta.outputs.labels }}
+      #       ```
+      #     edit-mode: replace

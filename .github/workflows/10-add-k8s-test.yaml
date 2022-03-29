@@ -1,0 +1,96 @@
+---
+name: 10 Build and Smoke Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-image:
+    name: Build Images
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write # needed to push docker image to ghcr.io
+
+    steps:
+
+      - name: Checkout git repo
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+#NEW: (START) ############################################################
+      - name: Login to ghcr.io registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build and Push to GHCR
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: ghcr.io/bretfisher/allhands22:${{ github.run_id }}
+          target: test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+      - uses: AbsaOSS/k3d-action@v2
+        with:
+          cluster-name: "test-cluster-1"
+          args: >-
+            --agents 1
+            --no-lb
+            --k3s-arg "--no-deploy=traefik,servicelb,metrics-server@server:*"
+      
+      - name: Smoke test deployment in k3d Kubernetes
+        run: |
+          kubectl create secret docker-registry regcred \
+            --docker-server=https://ghcr.io \
+            --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.GITHUB_TOKEN }}
+          export TESTING_IMAGE=ghcr.io/bretfisher/allhands22:"$GITHUB_RUN_ID"
+          envsubst < manifests/deployment.yaml  | kubectl apply -f -
+          kubectl rollout status deployment myapp
+          kubectl exec deploy/myapp -- curl --fail localhost
+#NEW: (END) ############################################################  
+
+      - name: Docker Metadata for Final Image Build
+        id: docker_meta
+        uses: docker/metadata-action@v3
+        with:
+          images: bretfisher/allhands22,ghcr.io/bretfisher/allhands22
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=10
+          # comment these out on all but 04-add-metadata.yaml to avoid overwriting image tags
+          # type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
+          # type=ref,event=pr
+          # type=ref,event=branch
+          # type=semver,pattern={{version}}
+      
+      - name: Docker Build and Push to Docker Hub
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64,linux/arm/v7

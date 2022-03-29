@@ -1,0 +1,23 @@
+services:
+  allhands22:
+    image: "${TESTING_IMAGE}"
+  
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./healthchecks:/healthchecks
+    healthcheck:
+      test: /healthchecks/postgres-healthcheck
+      interval: "5s"
+  sut:
+    image: "${TESTING_IMAGE}"
+    depends_on:
+      allhands22:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    # run all your tests here against the allhands22 service
+    command: curl --fail http://allhands22:80 || exit 1
