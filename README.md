@@ -8,7 +8,6 @@
 
 Watch the walkthrough of this repo: [https://www.youtube.com/watch?v=aZzV6X7XhyI](https://www.youtube.com/watch?v=aZzV6X7XhyI)
 
-
 See this repositories [`.github/workflows`](.github/workflows) directory for the below example workflows, ordered by number, simple to complex.
 
 These examples are focused on five of Docker's [official GitHub Actions](https://github.com/marketplace?type=actions&query=publisher%3Adocker+).
@@ -33,7 +32,21 @@ These examples are based on three workflow diagrams on progressivly more complex
 10. Adding Kubernetes smoke tests
 11. Adding job parallelizing for mucho speed
 
-This repository is part of a group of my sample repos on GitHub Actions:
+## GitHub Actions shown in these examples
+
+* [Docker Loginn](https://github.com/marketplace/actions/docker-login)
+* [Docker Setup Buildx](https://github.com/marketplace/actions/docker-setup-buildx)
+* [Docker Setup QEMU](https://github.com/marketplace/actions/docker-setup-qemu)
+* [Docker Metadata](https://github.com/marketplace/actions/docker-metadata-action)
+* [Docker Build and Push](https://github.com/marketplace/actions/build-and-push-docker-images)
+* [Aqua Security Trivy CVE Scan](https://github.com/marketplace/actions/aqua-security-trivy)
+* [Super-Linter](https://github.com/marketplace/actions/super-linter)
+* [Setup k3d](https://github.com/marketplace/actions/absaoss-k3d-action)
+* [Find Comment](https://github.com/marketplace/actions/find-comment)
+* [Create or Update Comment](https://github.com/marketplace/actions/create-or-update-comment)
+
+
+## This repository is part of my example repos on GitHub Actions
 
 * [bretfisher/github-actions-templates](https://github.com/BretFisher/github-actions-templates) - Main repository
 * [bretfisher/super-linter-workflow](https://github.com/BretFisher/super-linter-workflow) - Reusable linter workflow
@@ -45,7 +58,7 @@ This repository is part of a group of my sample repos on GitHub Actions:
 [Docker Build/Push Action advanced examples](https://github.com/docker/build-push-action/tree/master/docs/advanced)
 [My full list of container examples and tools](https://github.com/bretfisher)
 
-## Join my container DevOps community
+## 🎉🎉🎉 Join my container DevOps community 🎉🎉🎉
 
 * [My "Vital DevOps" Discord server](https://devops.fan)
 * [My weekly YouTube Live show](https://bret.live)
