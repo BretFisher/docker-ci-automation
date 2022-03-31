@@ -45,7 +45,6 @@ These examples are based on three workflow diagrams on progressivly more complex
 * [Find Comment](https://github.com/marketplace/actions/find-comment)
 * [Create or Update Comment](https://github.com/marketplace/actions/create-or-update-comment)
 
-
 ## This repository is part of my example repos on GitHub Actions
 
 * [bretfisher/github-actions-templates](https://github.com/BretFisher/github-actions-templates) - Main repository
