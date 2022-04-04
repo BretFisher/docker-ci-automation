@@ -35,7 +35,7 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@v3
         with:
-          images: bretfisher/allhands22
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/allhands22
           flavor: |
             latest=false
           tags: |

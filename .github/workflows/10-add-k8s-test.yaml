@@ -44,7 +44,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ghcr.io/bretfisher/allhands22:${{ github.run_id }}
+          tags: ghcr.io/${{ github.repository_owner }}/allhands22:${{ github.run_id }}
           target: test
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -64,7 +64,7 @@ jobs:
             --docker-server=https://ghcr.io \
             --docker-username=${{ github.actor }} \
             --docker-password=${{ secrets.GITHUB_TOKEN }}
-          export TESTING_IMAGE=ghcr.io/bretfisher/allhands22:"$GITHUB_RUN_ID"
+          export TESTING_IMAGE=ghcr.io/${{ github.repository_owner }}/allhands22:"$GITHUB_RUN_ID"
           envsubst < manifests/deployment.yaml  | kubectl apply -f -
           kubectl rollout status deployment myapp
           kubectl exec deploy/myapp -- curl --fail localhost
@@ -74,7 +74,7 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@v3
         with:
-          images: bretfisher/allhands22,ghcr.io/bretfisher/allhands22
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/allhands22,ghcr.io/${{ github.repository_owner }}/allhands22
           flavor: |
             latest=false
           tags: |
