@@ -202,7 +202,7 @@ jobs:
     runs-on: ubuntu-latest
 #NEW: (START) ##########################################################
     outputs:
-      tag: ${{ steps.first_tag.outputs.tag }}
+      tag: ${{ steps.first-tag.outputs.tag }}
 #NEW: (END) ############################################################
 
     permissions:
@@ -291,7 +291,7 @@ jobs:
       - name: Output first image tag
         id: first-tag
         run: |
-          echo ::set-output name=tag::$(echo ${{ steps.docker_meta.outputs.tags }} | cut -f1 -d',')
+          echo "::set-output name=tag::${{ steps.docker_meta.outputs.tags[0] }}"
 
   deploy-uffizzi-preview:
     name: Deploy Uffizzi Preview
