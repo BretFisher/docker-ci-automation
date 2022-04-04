@@ -234,7 +234,7 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@v3
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/allhands22,ghcr.io/${{ github.repository_owner }}/allhands22
+          images: uffizzi/allhands22,ghcr.io/${{ github.repository_owner }}/allhands22
           flavor: |
             latest=false
           tags: |
@@ -289,6 +289,7 @@ jobs:
 
 #NEW: (START) ##########################################################
   deploy-uffizzi-preview:
+    name: Deploy Uffizzi Preview
     runs-on: ubuntu-latest
     needs: [build-final-image]
     steps:
