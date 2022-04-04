@@ -1,0 +1,12 @@
+x-uffizzi:
+  ingress:
+    service: allhands22
+    port: 80
+
+services:
+  allhands22:
+    image: "${FINAL_IMAGE}"
+    deploy:
+      resources:
+        limits:
+          memory: 125M
