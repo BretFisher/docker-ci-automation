@@ -303,9 +303,10 @@ jobs:
       - name: Render Compose File
         run: |
           # Cut all but the first image tag.
-          export FINAL_IMAGE=`echo ${{ needs.build-final-image.outputs.tags }} | cut -f1 -d','`
+          export FINAL_IMAGE=$(echo ${{ needs.build-final-image.outputs.tags }} | cut -f1 -d',')
           echo Final image: "$FINAL_IMAGE"
           # Render simple template from environment variables.
+          mkdir tmp
           envsubst < docker-compose.uffizzi.yaml > tmp/docker-compose.generated.yaml
       - name: Deploy preview
         id: preview
