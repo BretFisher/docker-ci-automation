@@ -202,7 +202,7 @@ jobs:
     runs-on: ubuntu-latest
 #NEW: (START) ##########################################################
     outputs:
-      tag: ${{ steps.first-tag.outputs.tag }}
+      tags: ${{ steps.output-tags.outputs.tags }}
 #NEW: (END) ############################################################
 
     permissions:
@@ -289,9 +289,9 @@ jobs:
 
 #NEW: (START) ##########################################################
       - name: Output first image tag
-        id: first-tag
+        id: output-tags
         run: |
-          echo "::set-output name=tag::${{ steps.docker_meta.outputs.tags[0] }}"
+          echo "::set-output name=tags::${{ steps.docker_meta.outputs.tags }}"
 
   deploy-uffizzi-preview:
     name: Deploy Uffizzi Preview
@@ -309,7 +309,7 @@ jobs:
       - name: Render Compose File
         run: |
           # Cut all but the first image tag.
-          FINAL_IMAGE=$(echo ${{ needs.build-final-image.outputs.tag }} | cut -f1 -d',')
+          FINAL_IMAGE=$(echo ${{ needs.build-final-image.outputs.tags }} | cut -f1 -d',')
           export FINAL_IMAGE
           echo Final image: "$FINAL_IMAGE"
           # Render simple template from environment variables.
