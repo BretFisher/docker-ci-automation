@@ -332,7 +332,7 @@ jobs:
         # If PR, put Preview URL and ID in the PR comments
         # from https://github.com/marketplace/actions/create-or-update-comment
       - name: Confirm Successful Preview Deployment
-        run: curl --fail ${{ steps.preview.outputs.url }}
+        run: curl --fail --location ${{ steps.preview.outputs.url }}
       - name: Find comment for deployment URL
         uses: peter-evans/find-comment@v1
         if: github.event_name == 'pull_request'
