@@ -34,7 +34,7 @@ These examples are based on three workflow diagrams on progressivly more complex
 
 ## GitHub Actions shown in these examples
 
-* [Docker Loginn](https://github.com/marketplace/actions/docker-login)
+* [Docker Login](https://github.com/marketplace/actions/docker-login)
 * [Docker Setup Buildx](https://github.com/marketplace/actions/docker-setup-buildx)
 * [Docker Setup QEMU](https://github.com/marketplace/actions/docker-setup-qemu)
 * [Docker Metadata](https://github.com/marketplace/actions/docker-metadata-action)
