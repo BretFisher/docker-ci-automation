@@ -1,6 +1,6 @@
 # Automation with Docker for CI Workflows
 
-[![Lint Code Base](https://github.com/BretFisher/allhands22/actions/workflows/call-super-linter.yaml/badge.svg)](https://github.com/BretFisher/allhands22/actions/workflows/call-super-linter.yaml)
+[![Lint Code Base](https://github.com/bretfisher/docker-ci-automation/actions/workflows/call-super-linter.yaml/badge.svg)](https://github.com/bretfisher/docker-ci-automation/actions/workflows/call-super-linter.yaml)
 
 > For Docker Community All Hands 2022
 
