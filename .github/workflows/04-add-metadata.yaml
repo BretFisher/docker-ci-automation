@@ -29,7 +29,7 @@ jobs:
 #NEW: (START) ##########################################################
       - name: Docker meta
         id: docker_meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         with:
           images: bretfisher/allhands22
           flavor: |
