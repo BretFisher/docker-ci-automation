@@ -43,7 +43,7 @@ jobs:
 #NEW: (END) ############################################################
       
       - name: Docker build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
 #NEW: (START) ##########################################################
           push: true
