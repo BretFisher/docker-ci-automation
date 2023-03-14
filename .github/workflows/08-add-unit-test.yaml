@@ -15,7 +15,7 @@ jobs:
 
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -46,7 +46,7 @@ jobs:
 
       - name: Docker Metadata for Final Image Build
         id: docker_meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         with:
           images: bretfisher/docker-ci-automation
           flavor: |
