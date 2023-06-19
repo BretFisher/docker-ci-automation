@@ -18,6 +18,8 @@ These examples are based on three workflow diagrams on progressively more comple
 2. [Intermediate code PR automation workflow](diagrams/intermediate-code-pr.png)
 3. [Advanced code PR automation workflow](diagrams/advanced-code-pr.png)
 
+I also have a [LIVE course on learning GitHub Actions for DevOps automation and Argo CD](https://bret.courses/autodeploy) for GitOps-style deployments.
+
 ## Example Workflows
 
 1. Basic Docker build
