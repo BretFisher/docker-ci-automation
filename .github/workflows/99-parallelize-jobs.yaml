@@ -38,7 +38,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ghcr.io/bretfisher/docker-ci-automation:${{ github.run_id }}
+          tags: ghcr.io/${{ secrets.DOCKERHUB_USERNAME }}/docker-ci-automation:${{ github.run_id }}
           target: test
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -63,7 +63,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Unit Testing in Docker
-        run: docker run --rm ghcr.io/bretfisher/docker-ci-automation:"$GITHUB_RUN_ID" echo "run test commands here"
+        run: docker run --rm ghcr.io/${{ secrets.DOCKERHUB_USERNAME }}/docker-ci-automation:"$GITHUB_RUN_ID" echo "run test commands here"
 
 # NEXT JOB #######################################################################   
   test-integration:
@@ -94,7 +94,7 @@ jobs:
 
       - name: Test healthcheck in Docker Compose
         run: |
-          export TESTING_IMAGE=ghcr.io/bretfisher/docker-ci-automation:"$GITHUB_RUN_ID"
+          export TESTING_IMAGE=ghcr.io/${{ secrets.DOCKERHUB_USERNAME }}/docker-ci-automation:"$GITHUB_RUN_ID"
           echo Testing image: "$TESTING_IMAGE"
           docker compose -f docker-compose.test.yml up --exit-code-from sut
 
@@ -139,7 +139,7 @@ jobs:
             --docker-server=https://ghcr.io \
             --docker-username=${{ github.actor }} \
             --docker-password=${{ secrets.GITHUB_TOKEN }}
-          export TESTING_IMAGE=ghcr.io/bretfisher/docker-ci-automation:"$GITHUB_RUN_ID"
+          export TESTING_IMAGE=ghcr.io/${{ secrets.DOCKERHUB_USERNAME }}/docker-ci-automation:"$GITHUB_RUN_ID"
           envsubst < manifests/deployment.yaml  | kubectl apply -f -
           kubectl rollout status deployment myapp
           kubectl exec deploy/myapp -- curl --fail localhost
@@ -174,12 +174,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pull image to scan
-        run: docker pull ghcr.io/bretfisher/docker-ci-automation:"$GITHUB_RUN_ID"
+        run: docker pull ghcr.io/${{ secrets.DOCKERHUB_USERNAME }}/docker-ci-automation:"$GITHUB_RUN_ID"
         
       - name: Run Trivy for all CVEs (non-blocking)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ghcr.io/bretfisher/docker-ci-automation:${{ github.run_id }}
+          image-ref: ghcr.io/${{ secrets.DOCKERHUB_USERNAME }}/docker-ci-automation:${{ github.run_id }}
           format: table
           exit-code: 0
 
@@ -187,7 +187,7 @@ jobs:
       # - name: Run Trivy for HIGH,CRITICAL CVEs and report (blocking)
       #   uses: aquasecurity/trivy-action@master
       #   with:
-      #     image-ref: ghcr.io/bretfisher/docker-ci-automation:${{ github.run_id }}
+      #     image-ref: ghcr.io/${{ secrets.DOCKERHUB_USERNAME }}/docker-ci-automation:${{ github.run_id }}
       #     exit-code: 1
       #     ignore-unfixed: true
       #     vuln-type: 'os,library'
@@ -236,7 +236,7 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@v4
         with:
-          images: bretfisher/docker-ci-automation,ghcr.io/bretfisher/docker-ci-automation
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/docker-ci-automation,ghcr.io/${{ secrets.DOCKERHUB_USERNAME }}/docker-ci-automation
           flavor: |
             latest=false
           tags: |
