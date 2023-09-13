@@ -46,7 +46,7 @@ jobs:
             type=semver,pattern={{version}}
       
       - name: Docker build
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           push: false # false for this demo to prevent overwriting image tags of other examples
           tags: ${{ steps.docker_meta.outputs.tags }}
