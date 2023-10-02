@@ -3,7 +3,7 @@ on:
   workflow_dispatch
 jobs:   
   apply-terraform:
-    runs-on:  terraform
+    runs-on: ubuntu-latest
     environment: dev
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
