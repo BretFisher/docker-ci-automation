@@ -9,10 +9,8 @@ on:
     workflow_dispatch:
 jobs:   
   apply-terraform:
-    if: github.event.issues.closed == true  
     runs-on:  terraform
     environment: dev
-
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
