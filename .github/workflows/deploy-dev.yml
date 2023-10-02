@@ -9,6 +9,7 @@ on:
     workflow_dispatch:
 jobs:   
   dev:
+    if: ${{ github.event.label.name == 'dev' }}
     runs-on: ubuntu-latest
     environment: dev
     env:
