@@ -5,7 +5,7 @@ on:
     paths:
       - '**.tf'
     branches:
-      - 'main'
+      - 'main' 
     workflow_dispatch:
 jobs:   
   dev:
