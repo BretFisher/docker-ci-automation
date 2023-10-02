@@ -24,7 +24,7 @@ jobs:
         cd terraform
         terraform init
         terraform plan
-   prod:   
+  prod:   
     runs-on: ubuntu-latest
     need: dev
     environment: prod
