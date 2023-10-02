@@ -8,8 +8,8 @@ on:
       - 'main'
     workflow_dispatch:
 jobs:   
-  apply-terraform:
-    runs-on:  terraform
+  dev:
+    runs-on: ubuntu-latest
     environment: dev
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -17,10 +17,27 @@ jobs:
       AWS_DEFAULT_REGION: ${{ vars.AWS_REGION }}
     steps:   
      - name: Checkout repository
-       uses: actions/checkout@v3
+       uses: actions/checkout@v4
      - name: Invoke Terraform Command
        shell: bash
        run: |
         cd terraform
         terraform init
-        terraform apply -auto-approve
+        terraform plan
+   prod:   
+    runs-on: ubuntu-latest
+    need: dev
+    environment: prod
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ vars.AWS_REGION }}
+    steps:   
+     - name: Checkout repository
+       uses: actions/checkout@v4
+     - name: Invoke Terraform Command
+       shell: bash
+       run: |
+        cd terraform
+        terraform init
+        terraform plan

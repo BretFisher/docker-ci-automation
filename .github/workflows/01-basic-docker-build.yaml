@@ -1,27 +1,27 @@
----
-name: 01 Basic Docker Build
-# simplest workflow possible
+# ---
+# name: 01 Basic Docker Build
+# # simplest workflow possible
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
 
-jobs:
-  build-image:
-    name: Build Image
-    runs-on: ubuntu-latest
-    steps:
+# jobs:
+#   build-image:
+#     name: Build Image
+#     runs-on: ubuntu-latest
+#     steps:
             
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USERNAME }}
+#           password: ${{ secrets.DOCKERHUB_TOKEN }}
       
-      - name: Docker build
-        uses: docker/build-push-action@v5
-        with:
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: trucdp/docker-ci-automation:latest,trucdp/docker-ci-automation:01
+#       - name: Docker build
+#         uses: docker/build-push-action@v5
+#         with:
+#           push: ${{ github.event_name != 'pull_request' }}
+#           tags: trucdp/docker-ci-automation:latest,trucdp/docker-ci-automation:01
