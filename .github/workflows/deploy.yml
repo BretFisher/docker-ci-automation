@@ -1,12 +1,11 @@
 name: Make America AWS Great Again
 on:
   issues:
-    types: closed
+    types: opened
     paths:
       - '**.tf'
     branches:
-      - 'main' 
-    workflow_dispatch:
+      - 'main'
 jobs:   
   dev:
     if: ${{ github.event.label.name == 'dev' }}
