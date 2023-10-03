@@ -20,9 +20,8 @@ jobs:
       env:
         title: ${{ github.event.issue.title }}
       with:
-    
         script: |
-          const { data: issue } = await github.issues.create({
+          const { data: issue } = await github.rest.issues.createComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
             title: 'Deployment failed',
