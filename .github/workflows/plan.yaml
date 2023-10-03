@@ -1,0 +1,23 @@
+name: The Pentagon Plan Reviewer
+on:
+  pull_request:
+    types: [opened, reopened]
+    paths:
+      - '**.tf'
+jobs: 
+  plan-terraform:   
+    runs-on: ubuntu-latest
+    environment: dev
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ vars.AWS_REGION }}
+    steps:   
+     - name: Checkout repository
+       uses: actions/checkout@v3
+     - name: Invoke Terraform Command
+       shell: bash
+       run: |
+        cd terraform
+        terraform init
+        terraform plan

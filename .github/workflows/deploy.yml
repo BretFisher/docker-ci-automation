@@ -1,0 +1,43 @@
+name: Make America AWS Great Again
+on:
+  issues:
+    types: opened
+    paths:
+      - '**.tf'
+    branches:
+      - 'main'
+jobs:   
+  dev:
+    if: ${{ github.event.label.name == 'dev' }}
+    runs-on: ubuntu-latest
+    environment: dev
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ vars.AWS_REGION }}
+    steps:   
+     - name: Checkout repository
+       uses: actions/checkout@v4
+     - name: Invoke Terraform Command
+       shell: bash
+       run: |
+        cd terraform
+        terraform init
+        terraform plan
+  prod:   
+    runs-on: ubuntu-latest
+    needs: dev
+    environment: prod
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ vars.AWS_REGION }}
+    steps:   
+     - name: Checkout repository
+       uses: actions/checkout@v4
+     - name: Invoke Terraform Command
+       shell: bash
+       run: |
+        cd terraform
+        terraform init
+        terraform plan
