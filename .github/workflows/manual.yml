@@ -23,17 +23,12 @@ jobs:
             });
             console.log(`Created issue ${issue.html_url}`);
             core.setOutput('issue-url', issue.html_url);
-            const { data: pullRequest } = await github.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-            });
+          
             const issueUrl = core.getInput('issue-url');
             const comment = `The deployment to dev failed. Please see ${issueUrl} for more information.`;
             await github.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: pullRequest.number,
               body: comment,
             });
           } catch (error) {
