@@ -1,14 +1,7 @@
 name: Manual workflow
 
 on:
-  workflow_dispatch:
-    inputs:
-      name:
-        description: 'Person to greet'
-        default: 'World'
-        required: true
-        type: string
-
+  push:
 jobs:
   greet:
     runs-on: ubuntu-latest
@@ -21,23 +14,29 @@ jobs:
         title: ${{ github.event.issue.title }}
       with:
         script: |
-          const { data: issue } = await github.rest.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: 'Deployment failed',
-            body: 'The deployment to dev failed. Please investigate and resolve the issue.',
-          });
-          console.log(`Created issue ${issue.html_url}`);
-          core.setOutput('issue-url', issue.html_url);
-          const { data: pullRequest } = await github.pulls.get({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: context.payload.pull_request.number,
-          });
-          const issueUrl = core.getInput('issue-url');
-          const comment = `The deployment to dev failed. Please see ${issueUrl} for more information.`;
-          await github.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: pullRequest.number,
-            body: comment, });
+          try {
+            const { data: issue } = await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: 'The deployment to dev failed. Please investigate and resolve the issue.',
+            });
+            console.log(`Created issue ${issue.html_url}`);
+            core.setOutput('issue-url', issue.html_url);
+            const { data: pullRequest } = await github.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+            });
+            const issueUrl = core.getInput('issue-url');
+            const comment = `The deployment to dev failed. Please see ${issueUrl} for more information.`;
+            await github.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pullRequest.number,
+              body: comment,
+            });
+          } catch (error) {
+            console.error(error);
+            core.setFailed(error.message);
+          }
