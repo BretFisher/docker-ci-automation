@@ -1,0 +1,44 @@
+name: Manual workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Person to greet'
+        default: 'World'
+        required: true
+        type: string
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Send greeting
+      run: echo "Hello ${{ inputs.name }}"
+    - name: Create issue on failed deployment
+      uses: actions/github-script@v6
+      env:
+        title: ${{ github.event.issue.title }}
+      with:
+    
+        script: |
+          const { data: issue } = await github.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: 'Deployment failed',
+            body: 'The deployment to dev failed. Please investigate and resolve the issue.',
+          });
+          console.log(`Created issue ${issue.html_url}`);
+          core.setOutput('issue-url', issue.html_url);
+          const { data: pullRequest } = await github.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.payload.pull_request.number,
+          });
+          const issueUrl = core.getInput('issue-url');
+          const comment = `The deployment to dev failed. Please see ${issueUrl} for more information.`;
+          await github.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: pullRequest.number,
+            body: comment, });
