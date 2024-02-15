@@ -17,11 +17,11 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: sakshamgoyal3381
+          password: India@$3381
       
       - name: Docker build
         uses: docker/build-push-action@v5
         with:
           push: ${{ github.event_name != 'pull_request' }}
-          tags: bretfisher/docker-ci-automation:latest,bretfisher/docker-ci-automation:01
+          tags: sakshamlang/docker-ci-automation
