@@ -44,7 +44,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ghcr.io/bretfisher/docker-ci-automation:${{ github.run_id }}
+          tags: ghcr.io/manj005/docker-ci-automation:${{ github.run_id }}
           target: test
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -64,7 +64,7 @@ jobs:
             --docker-server=https://ghcr.io \
             --docker-username=${{ github.actor }} \
             --docker-password=${{ secrets.GITHUB_TOKEN }}
-          export TESTING_IMAGE=ghcr.io/bretfisher/docker-ci-automation:"$GITHUB_RUN_ID"
+          export TESTING_IMAGE=ghcr.io/manj005/docker-ci-automation:"$GITHUB_RUN_ID"
           envsubst < manifests/deployment.yaml  | kubectl apply -f -
           kubectl rollout status deployment myapp
           kubectl exec deploy/myapp -- curl --fail localhost
@@ -74,7 +74,7 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@v5
         with:
-          images: bretfisher/docker-ci-automation,ghcr.io/bretfisher/docker-ci-automation
+          images: manj005/docker-ci-automation,ghcr.io/manj005/docker-ci-automation
           flavor: |
             latest=false
           tags: |

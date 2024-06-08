@@ -1,5 +1,5 @@
 ---
-# template source: https://github.com/bretfisher/super-linter-workflow/blob/main/templates/call-super-linter.yaml
+# template source: https://github.com/manj005/super-linter-workflow/blob/main/templates/call-super-linter.yaml
 name: Lint Code Base
 
 on:
@@ -23,7 +23,7 @@ jobs:
     ### you can also call workflows from inside the same repo via file path
 
     #FIXME: customize uri to point to your own linter repository
-    uses: bretfisher/super-linter-workflow/.github/workflows/reusable-super-linter.yaml@main
+    uses: manj005/super-linter-workflow/.github/workflows/reusable-super-linter.yaml@main
     
     ### Optional settings examples
     
