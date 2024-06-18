@@ -28,7 +28,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       
       - name: Docker build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: ${{ github.event_name != 'pull_request' }}
           tags: bretfisher/docker-ci-automation:03
