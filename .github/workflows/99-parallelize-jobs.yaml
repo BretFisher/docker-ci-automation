@@ -255,7 +255,11 @@ jobs:
           labels: ${{ steps.docker_meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          # comma seperated list of what OS and architechtures to build for (in parallel)
+          # default is linux/amd64 (the OS of the runner) but you can add more
+          # adding linux/arm64 is recommended for Apple Silicon, Raspberry Pi, AWS Graviton, etc.
+          # linux/arm/v7 is for 32-bit ARM devices like Raspberry Pi 2/3
+          platforms: linux/amd64,linux/arm64
 
         # If PR, put image tags in the PR comments
         # from https://github.com/marketplace/actions/create-or-update-comment
