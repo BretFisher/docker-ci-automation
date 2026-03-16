@@ -24,4 +24,4 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           push: ${{ github.event_name != 'pull_request' }}
-          tags: bretfisher/docker-ci-automation:latest,bretfisher/docker-ci-automation:01
+          tags: avenger424242/docker-ci-automation:latest,avenger424242/docker-ci-automation:01
